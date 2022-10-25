@@ -3,9 +3,7 @@ package com.code19.nfcdemo;
 public class DataUtils {
     public static String bytesToHexString(byte[] src, boolean isPrefix) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (isPrefix == true) {
-            stringBuilder.append("0x");
-        }
+        if (isPrefix) stringBuilder.append("0x");
         if (src == null || src.length <= 0) {
             return null;
         }
