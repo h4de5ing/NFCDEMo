@@ -12,7 +12,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import com.code19.nfcdemo.databinding.ActivityMainBinding
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.experimental.and
@@ -25,12 +25,13 @@ open class MainActivity : AppCompatActivity() {
     private var mNFCAdapter: NfcAdapter? = null
     private var mFilters: Array<IntentFilter>? = null
     private var mTechLists: Array<Array<String>>? = null
-
+    private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        textView.movementMethod = ScrollingMovementMethod()
-        clean.setOnClickListener { textView.text = "" }
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.textView.movementMethod = ScrollingMovementMethod()
+        binding.clean.setOnClickListener { binding.textView.text = "" }
         mNFCAdapter = NfcAdapter.getDefaultAdapter(this)
         if (mNFCAdapter != null) {
             if (!mNFCAdapter!!.isEnabled) {
@@ -40,7 +41,7 @@ open class MainActivity : AppCompatActivity() {
                     this,
                     0,
                     Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-                    0
+                    PendingIntent.FLAG_IMMUTABLE
                 )
                 val filter = IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED).apply {
                     try {
@@ -50,7 +51,7 @@ open class MainActivity : AppCompatActivity() {
                     }
                 }
                 mFilters = arrayOf(filter)
-                mTechLists = arrayOf(arrayOf(NfcA::class.java.name))
+                mTechLists = arrayOf(arrayOf(NfcA::class.java.name,Ndef::class.java.name))
             }
         } else updateTv("当前设备不支持NFC！")
     }
@@ -76,8 +77,7 @@ open class MainActivity : AppCompatActivity() {
         if (tag != null) {
             updateTv(
                 "\nID:" + DataUtils.bytesToHexString(
-                    tag.id,
-                    true
+                    tag.id, true
                 ) + "\nTAG Tech:" + Arrays.toString(tag.techList)
             )
             try {
@@ -97,17 +97,16 @@ open class MainActivity : AppCompatActivity() {
                 val ultralight = MifareUltralight.get(tag)
                 if (isoDep != null) {
                     isoDep.connect()
-                    isoDep.timeout = 3000
+                    //isoDep.timeout = 3000
                     updateTv("▶ IsoDep Maximum transceive length: ${isoDep.maxTransceiveLength} bytes")
                     updateTv("▶ IsoDep Default maximum transceive time-out: ${isoDep.timeout}ms")
-                    if (Build.VERSION.SDK_INT >= 16)
-                        updateTv("▶ IsoDep Extended length APDUs ${if (isoDep.isExtendedLengthApduSupported) "" else "not"} supported")
+                    if (Build.VERSION.SDK_INT >= 16) updateTv("▶ IsoDep Extended length APDUs ${if (isoDep.isExtendedLengthApduSupported) "" else "not"} supported")
                     isoDep.close()
                     updateTv("\n")
                 }
                 if (nfcA != null) {
                     nfcA.connect()
-                    nfcA.timeout = 3000
+                    //nfcA.timeout = 3000
                     updateTv("▶ NfcA ATQA: ${DataUtils.bytesToHexString(nfcA.atqa, true)}")
                     updateTv("▶ NfcA SAK: 0x${nfcA.sak.toString(16)}")
                     updateTv("▶ NfcA Maximum transceive length: ${nfcA.maxTransceiveLength} bytes")
@@ -119,7 +118,7 @@ open class MainActivity : AppCompatActivity() {
                 if (mfc != null) {
                     var metaInfo = ""
                     mfc.connect()
-                    mfc.timeout = 3000
+                    //mfc.timeout = 3000
                     updateTv("▶ MifareClassic Maximum transceive length: ${mfc.maxTransceiveLength} bytes")
                     updateTv("▶ MifareClassic Default maximum transceive time-out: ${mfc.timeout}ms")
                     var auth: Boolean
@@ -139,9 +138,7 @@ open class MainActivity : AppCompatActivity() {
                         var bIndex: Int
                         if (auth) {
                             metaInfo += String.format(
-                                "Sector %d (0x%02X)\n",
-                                Integer.valueOf(j),
-                                Integer.valueOf(j)
+                                "Sector %d (0x%02X)\n", Integer.valueOf(j), Integer.valueOf(j)
                             )
                             // 读取扇区中的块
                             bCount = mfc.getBlockCountInSector(j)
@@ -149,8 +146,7 @@ open class MainActivity : AppCompatActivity() {
                             for (i in 0 until bCount) {
                                 val data = mfc.readBlock(bIndex)
                                 metaInfo += ("Block " + String.format(
-                                    "[%02X] ",
-                                    Integer.valueOf(bIndex)
+                                    "[%02X] ", Integer.valueOf(bIndex)
                                 ) + " : " + DataUtils.saveHex2String(data) + "\n")
                                 bIndex++
                             }
@@ -213,11 +209,10 @@ open class MainActivity : AppCompatActivity() {
     private fun updateTv(message: String) {
         try {
             runOnUiThread {
-                textView?.apply {
-                    this.append("\n${message}")
-                    val offset: Int = this.lineCount * this.lineHeight - this.height
-                    this.scrollTo(0, offset.coerceAtLeast(0))
-                }
+                binding.textView.append("\n${message}")
+                val offset: Int =
+                    binding.textView.lineCount * binding.textView.lineHeight - binding.textView.height
+                binding.textView.scrollTo(0, offset.coerceAtLeast(0))
             }
         } catch (e: Exception) {
             e.printStackTrace()

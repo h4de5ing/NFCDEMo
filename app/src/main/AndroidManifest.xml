@@ -13,11 +13,14 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:label="NFCMain"
+            android:launchMode="singleTop"
+            android:permission="android.permission.NFC">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
@@ -36,6 +39,32 @@
                 android:name="android.nfc.action.TECH_DISCOVERED"
                 android:resource="@xml/nfc_tech_filter" />
         </activity>
+<!--        <activity-->
+<!--            android:name="TagViewer"-->
+<!--            android:exported="true"-->
+<!--            android:label="TagViewer"-->
+<!--            android:launchMode="singleTop"-->
+<!--            android:permission="android.permission.NFC"-->
+<!--            android:priority="-10">-->
+<!--            &lt;!&ndash; Offer to display anything with NDEF data &ndash;&gt;-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.nfc.action.TECH_DISCOVERED" />-->
+<!--            </intent-filter>-->
+
+<!--            <meta-data-->
+<!--                android:name="android.nfc.action.TECH_DISCOVERED"-->
+<!--                android:resource="@xml/filter_nfc" />-->
+
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+
+<!--                <data android:mimeType="vnd.android.cursor.item/ndef_msg" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
     </application>
 
 </manifest>
